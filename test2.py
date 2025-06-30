@@ -19,7 +19,6 @@ try:
     log(f"Querying {api_url}")
     resp = requests.get(api_url, headers=headers)
     log(f"Status code: {resp.status_code}")
-    # Pokus o JSON, ak zlyhá, vypíš response text (väčšinou HTML s chybou)
     try:
         projects = resp.json()
     except Exception as e:
@@ -41,7 +40,9 @@ for project in projects:
             continue
 
         repo_name = project['path']
-        log(f"Testing repo: {repo_name}")
+        log("=" * 60)
+        log(f"Project: {repo_name}")
+        log("=" * 60)
         repo_url = f"https://{GITLAB_USER}:{GITLAB_TOKEN}@git.kpi.fei.tuke.sk/{GITLAB_GROUP}/{repo_name}.git"
         target_dir = f"./students/{repo_name}"
         os.makedirs(target_dir, exist_ok=True)
@@ -50,28 +51,34 @@ for project in projects:
         clone_cmd = ["git", "clone", "--depth", "1", repo_url, target_dir]
         clone_proc = subprocess.run(clone_cmd, capture_output=True, text=True)
         if clone_proc.returncode != 0:
-            log(f"{repo_name}: git clone FAILED: {clone_proc.stderr.strip()}")
+            log("Result: git clone FAILED")
+            log(clone_proc.stderr.strip())
             continue
 
         arrays_c_path = os.path.join(target_dir, "ps2", "arrays.c")
         if not os.path.exists(arrays_c_path):
-            log(f"{repo_name}: ps2/arrays.c NOT FOUND")
+            log("Result: ps2/arrays.c NOT FOUND")
             continue
 
         bin_path = os.path.join(target_dir, "ps2", "arrays.out")
-        gcc_cmd = ["gcc", arrays_c_path, "-o", bin_path]
+        gcc_cmd = ["gcc", arrays_c_path, "-o", bin_path, "-lm"]
         gcc_proc = subprocess.run(gcc_cmd, capture_output=True, text=True)
         if gcc_proc.returncode != 0:
-            log(f"{repo_name}: COMPILATION ERROR: {gcc_proc.stderr.strip()}")
+            log("Result: COMPILATION ERROR")
+            log(gcc_proc.stderr.strip())
             continue
 
         run_proc = subprocess.run([bin_path], capture_output=True, text=True)
         if run_proc.returncode == 0:
-            log(f"{repo_name}: OK - output: {run_proc.stdout.strip()}")
+            log("Result: OK")
+            log(run_proc.stdout.strip())
         else:
-            log(f"{repo_name}: RUNTIME ERROR: {run_proc.stderr.strip()}")
+            log("Result: RUNTIME ERROR")
+            log(run_proc.stderr.strip())
     except Exception as e:
-        log(f"{project}: Unexpected error: {str(e)}")
+        log(f"Unexpected error: {str(e)}")
+    finally:
+        log("")  # prázdny riadok medzi projektmi
 
 with open("result2.txt", "w", encoding="utf-8") as f:
     for line in results:
