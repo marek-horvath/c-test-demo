@@ -11,8 +11,8 @@ GITLAB_USER = os.environ.get("GITLAB_USER")
 GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID")   # teraz id namiesto mena
 ASSIGNMENT = os.environ.get("ASSIGNMENT")      # názov assignmentu, default ps2
 
-RESULT_FILE = "result5.txt"
-CSV_FILE = "result5.csv"
+RESULT_FILE = "result.txt"
+CSV_FILE = "result.csv"
 
 # Natiahni assignment podľa mena (napr. ps2)
 assignment_module = importlib.import_module(f"assignments.{ASSIGNMENT}")
