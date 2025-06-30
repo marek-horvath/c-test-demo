@@ -1,5 +1,6 @@
 import os
 import requests
+import subprocess
 from test_helpers import remove_main_from_c, compile_and_run_test, run_binary
 
 GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
