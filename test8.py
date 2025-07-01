@@ -19,7 +19,6 @@ CSV_FILE = f"/results/result_{CONTAINER_ID}.csv"
 RESULT_FILE = f"/results/results_{CONTAINER_ID}.txt"
 LOG_FILE = f"/results/logs_{CONTAINER_ID}.txt"
 
-# Redirect stdout/stderr to log file
 sys.stdout = open(LOG_FILE, "a", encoding="utf-8")
 sys.stderr = sys.stdout
 
@@ -81,8 +80,21 @@ def safe_rmtree(path):
     except Exception as e:
         print(f"Could not rmtree {path}: {e}")
 
-all_projects = get_all_projects_recursive(GITLAB_GROUP_ID)
+def git_clone_with_retries(clone_cmd, max_retries=5, delay_sec=10):
+    for attempt in range(max_retries):
+        clone_proc = subprocess.run(clone_cmd, capture_output=True, text=True)
+        print(f"Clone attempt {attempt+1}: stdout: {clone_proc.stdout}")
+        print(f"Clone attempt {attempt+1}: stderr: {clone_proc.stderr}")
+        if clone_proc.returncode == 0:
+            return True
+        if "429" in clone_proc.stderr or "429" in clone_proc.stdout:
+            print(f"Rate limit (429) detected, retrying in {delay_sec} seconds...")
+            time.sleep(delay_sec)
+        else:
+            break  # Other error, no sense to retry
+    return False
 
+all_projects = get_all_projects_recursive(GITLAB_GROUP_ID)
 print(f"Found {len(all_projects)} projects in all subgroups.")
 
 csv_header = ["project", "student", "project_path"]
@@ -110,10 +122,8 @@ for project in all_projects:
 
         clone_cmd = ["git", "clone", "--depth", "1", repo_url, target_dir]
         print(f"Running clone: {' '.join(clone_cmd)}")
-        clone_proc = subprocess.run(clone_cmd, capture_output=True, text=True)
-        print(f"Clone stdout: {clone_proc.stdout}")
-        print(f"Clone stderr: {clone_proc.stderr}")
-        if clone_proc.returncode != 0:
+        cloned_ok = git_clone_with_retries(clone_cmd, max_retries=7, delay_sec=10)
+        if not cloned_ok:
             print(f"{repo_name}: NOT SUBMITTED, git clone failed")
             continue
 
