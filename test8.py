@@ -7,23 +7,30 @@ import shutil
 import time
 from test_helpers import remove_main_from_c
 
-# ENV premenné
-GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
-GITLAB_USER = os.environ.get("GITLAB_USER")
-GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID")
-ASSIGNMENT = os.environ.get("ASSIGNMENT")
-CONTAINER_ID = os.environ.get(
-    "CONTAINER_ID",
-    os.environ.get("GITLAB_GROUP_ID", str(int(time.time())))
-)  # OPRAVENÁ zátvorka
+# Debug zápis na úplný začiatok, overí, či kontajner vôbec štartuje!
+with open("/results/DEBUG_START.txt", "w") as f:
+    f.write("Skript sa spustil.\n")
+
+# ENV premenné, bezpečné načítanie
+GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN", "")
+GITLAB_USER = os.environ.get("GITLAB_USER", "")
+GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID", "")
+ASSIGNMENT = os.environ.get("ASSIGNMENT", "")
+CONTAINER_ID = os.environ.get("CONTAINER_ID") or os.environ.get("GITLAB_GROUP_ID") or str(int(time.time()))
 
 # Výsledné súbory majú unikátne meno pre každý beh/kontajner
 CSV_FILE = f"/results/result_{CONTAINER_ID}.csv"
 RESULT_FILE = f"/results/results_{CONTAINER_ID}.txt"
 LOG_FILE = f"/results/logs_{CONTAINER_ID}.txt"
 
-assignment_module = importlib.import_module(f"assignments.{ASSIGNMENT}")
-TASKS = assignment_module.TASKS
+try:
+    assignment_module = importlib.import_module(f"assignments.{ASSIGNMENT}")
+    TASKS = assignment_module.TASKS
+except Exception as e:
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write(f"Import error: {e}\n")
+    # Zastav ďalšie spracovanie
+    exit(1)
 
 headers = {"PRIVATE-TOKEN": GITLAB_TOKEN}
 BASE_API = "https://git.kpi.fei.tuke.sk/api/v4"
