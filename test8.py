@@ -12,7 +12,10 @@ GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
 GITLAB_USER = os.environ.get("GITLAB_USER")
 GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID")
 ASSIGNMENT = os.environ.get("ASSIGNMENT")
-CONTAINER_ID = os.environ.get("CONTAINER_ID", os.environ.get("GITLAB_GROUP_ID", str(int(time.time())))
+CONTAINER_ID = os.environ.get(
+    "CONTAINER_ID",
+    os.environ.get("GITLAB_GROUP_ID", str(int(time.time())))
+)  # OPRAVENÁ zátvorka
 
 # Výsledné súbory majú unikátne meno pre každý beh/kontajner
 CSV_FILE = f"/results/result_{CONTAINER_ID}.csv"
