@@ -102,7 +102,7 @@ for project in all_projects:
         clone_cmd = ["git", "clone", "--depth", "1", repo_url, target_dir]
         clone_proc = subprocess.run(clone_cmd, capture_output=True, text=True)
         if clone_proc.returncode != 0:
-            log("Result: git clone FAILED")
+            log("Result: NOT SUBMITTED")
             for task, _ in TASKS:
                 log(f"{task}: 0")
             csv_rows.append([repo_name, student_name, project_path] + [0] * len(TASKS) + [0])
@@ -127,7 +127,6 @@ for project in all_projects:
             output_bin_path = os.path.join(target_dir, "ps2", f"{task}_tester.out")
             gcc_cmd = ["gcc", main_test_c_path, arrays_nomains_path, "-o", output_bin_path, "-lm"]
             try:
-                # Kompilácia s timeoutom
                 gcc_proc = subprocess.run(gcc_cmd, capture_output=True, text=True, timeout=COMPILE_TIMEOUT)
                 if gcc_proc.returncode != 0:
                     log(f"{task}: 0  [compile error]")
@@ -143,7 +142,6 @@ for project in all_projects:
                 continue
 
             try:
-                # Spustenie testu s timeoutom a catch na segfault (returncode < 0 alebo 139)
                 run_proc = subprocess.run([output_bin_path], capture_output=True, text=True, timeout=TEST_TIMEOUT)
                 if run_proc.returncode == 0:
                     pt = parse_points_from_output(run_proc.stdout, task)
@@ -166,20 +164,4 @@ for project in all_projects:
                 row_points.append(0)
 
         log(f"Total: {total}/{max_score}")
-        csv_rows.append([repo_name, student_name, project_path] + row_points + [total])
-    except Exception as e:
-        log(f"Unexpected error: {str(e)}")
-        for task, _ in TASKS:
-            log(f"{task}: 0")
-        csv_rows.append([repo_name, student_name, project_path] + [0] * len(TASKS) + [0])
-    finally:
-        log("")
-
-with open(RESULT_FILE, "w", encoding="utf-8") as f:
-    for line in results:
-        f.write(line + "\n")
-
-with open(CSV_FILE, "w", encoding="utf-8", newline='') as f:
-    writer = csv.writer(f)
-    for row in csv_rows:
-        writer.writerow(row)
+        csv_rows.append([repo_name, student_name, project_path] + row_points +
