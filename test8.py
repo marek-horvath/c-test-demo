@@ -4,6 +4,7 @@ import subprocess
 import importlib
 import csv
 import shutil
+import time
 from test_helpers import remove_main_from_c
 
 # ENV premenné
@@ -11,10 +12,12 @@ GITLAB_TOKEN = os.environ.get("GITLAB_TOKEN")
 GITLAB_USER = os.environ.get("GITLAB_USER")
 GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID")
 ASSIGNMENT = os.environ.get("ASSIGNMENT")
+CONTAINER_ID = os.environ.get("CONTAINER_ID", os.environ.get("GITLAB_GROUP_ID", str(int(time.time())))
 
-CSV_FILE = "/results/result.csv"
-RESULT_FILE = "/results/results.txt"
-LOG_FILE = "/results/logs.txt"
+# Výsledné súbory majú unikátne meno pre každý beh/kontajner
+CSV_FILE = f"/results/result_{CONTAINER_ID}.csv"
+RESULT_FILE = f"/results/results_{CONTAINER_ID}.txt"
+LOG_FILE = f"/results/logs_{CONTAINER_ID}.txt"
 
 assignment_module = importlib.import_module(f"assignments.{ASSIGNMENT}")
 TASKS = assignment_module.TASKS
