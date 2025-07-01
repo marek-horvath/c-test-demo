@@ -164,4 +164,20 @@ for project in all_projects:
                 row_points.append(0)
 
         log(f"Total: {total}/{max_score}")
-        csv_rows.append([repo_name, student_name, project_path] + row_points +
+        csv_rows.append([repo_name, student_name, project_path] + row_points + [total])
+    except Exception as e:
+        log(f"Unexpected error: {str(e)}")
+        for task, _ in TASKS:
+            log(f"{task}: 0")
+        csv_rows.append([repo_name, student_name, project_path] + [0] * len(TASKS) + [0])
+    finally:
+        log("")
+
+with open(RESULT_FILE, "w", encoding="utf-8") as f:
+    for line in results:
+        f.write(line + "\n")
+
+with open(CSV_FILE, "w", encoding="utf-8", newline='') as f:
+    writer = csv.writer(f)
+    for row in csv_rows:
+        writer.writerow(row)
