@@ -15,8 +15,8 @@ GITLAB_GROUP_ID = os.environ.get("GITLAB_GROUP_ID", "")
 ASSIGNMENT = os.environ.get("ASSIGNMENT", "")
 CONTAINER_ID = os.environ.get("CONTAINER_ID") or os.environ.get("GITLAB_GROUP_ID") or str(int(time.time()))
 
-CSV_FILE = f"/results/result.csv"
-LOG_FILE = f"/results/logs.txt"
+CSV_FILE = f"/results/result_{CONTAINER_ID}.csv"
+LOG_FILE = f"/results/logs_{CONTAINER_ID}.txt"
 
 sys.stdout = open(LOG_FILE, "a", encoding="utf-8")
 sys.stderr = sys.stdout
